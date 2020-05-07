@@ -6,8 +6,8 @@ def db_instance(url):
     db = client['anya']
 
     collections = db.list_collection_names()
-    if 'advertisements' not in collections:
-        db.create_collection('advertisements')
+    if 'ads' not in collections:
+        db.create_collection('ads')
     if 'timestamps' not in collections:
         db.create_collection('timestamps')
 

@@ -27,7 +27,7 @@ def field_validator(schema):
 @field_validator(ad_schema)
 def create_advertisement():
     data = request.get_json()
-    db.advertisements.insert_one(data)
+    db.ads.insert_one(data)
     return {'success': True}, 200
 
 
