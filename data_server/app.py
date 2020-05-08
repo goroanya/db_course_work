@@ -2,13 +2,12 @@ import os
 
 from flask import Flask, request
 
-import settings
 from api_schema import AdSchema
-from storage import db_instance
+from storage import get_collection
 
 
 app = Flask(__name__)
-db = db_instance(os.getenv('DB_URL'))
+collection = get_collection()
 ad_schema = AdSchema()
 
 
@@ -27,7 +26,7 @@ def field_validator(schema):
 @field_validator(ad_schema)
 def create_advertisement():
     data = request.get_json()
-    db.ads.insert_one(data)
+    collection.insert_one(data)
     return {'success': True}, 200
 
 

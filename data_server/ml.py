@@ -10,20 +10,49 @@ X_NAMES = ['Price, 1000$', 'Area, m^2', 'Number of rooms', 'Region']
 REGION_CODES = dict()
 
 
-def load_np_array(db):
+def load_np_array(collection):
     ads = [np.array([ad['price'], ad['area'], ad['number_of_rooms'], -1], dtype=int)
-           for ad in db.ads.find()]
+           for ad in collection.find()]
     ads = np.array(ads)
-    print(ads)
     ads[:, PRICE] = ads[:, PRICE] / 1000
 
-    region_names = [ad['region'] for ad in db.ads.find()]
+    region_names = [ad['region'] for ad in collection.find()]
+    names_set = set(region_names)
     global REGION_CODES
-    for index, region_name in enumerate(set(region_names)):
-        REGION_CODES[region_name] = index
+    for index, region_name in enumerate(names_set):
+        REGION_CODES[region_name] = len(names_set) + index
     codes = [REGION_CODES[region_name] for region_name in region_names]
     ads[:, REGION] = np.array(codes)
+
+    return remove_odd_value(sort_by_avg_region_price(ads))
+
+
+def sort_by_avg_region_price(ads):
+    region_codes = ads[:, REGION]
+    avg_prices = dict()
+    for code in set(region_codes):
+        avg_price = np.average(ads[np.equal(ads[:, REGION], code)])
+        avg_prices[code] = avg_price
+
+    sorted_codes = []
+    for code in sorted(ads[:, REGION], key=lambda r: avg_prices[r]):
+        if code not in sorted_codes:
+            sorted_codes.append(code)
+
+    for index, code in enumerate(sorted_codes):
+        name = find_region_name_by_code(code)
+        REGION_CODES[name] = index
+        for ad in ads:
+            if ad[REGION] == code:
+                ad[REGION] = index
+
     return ads
+
+
+def find_region_name_by_code(given_code):
+    for name, code in REGION_CODES.items():
+        if code == given_code:
+            return name
 
 
 def remove_odd_value(df):
@@ -31,17 +60,23 @@ def remove_odd_value(df):
     return df[(np.abs(stats.zscore(df)) < float(std_dev)).all(axis=1)]
 
 
-def create_model(x, y):
+def create_linear_model(x, y):
+    model = LinearRegression()
+    model.fit(x, y)
+    return model
+
+
+def create_polynomial_model(x, y):
     degree = 3
     model = make_pipeline(PolynomialFeatures(degree), Ridge())
     model.fit(x, y)
     return model
 
 
-def plot_image(x, y, model, x_axis_name):
+def plot_image(x, y, model, x_axis_name, regression_type):
     # change xticks and dpi
     if x_axis_name == 'Region':
-        plt.figure(figsize=(20, 6), dpi=160)
+        plt.figure(figsize=(40, 6), dpi=160)
         labels = list(REGION_CODES.keys())
         ticks = list(REGION_CODES.values())
         plt.xticks(ticks, labels, fontsize=5)
@@ -57,7 +92,10 @@ def plot_image(x, y, model, x_axis_name):
     plt.plot(x_plot, model.predict(x_plot), color='red', label='Predicted values')
     plt.legend(loc='upper left')
 
+    window_title = f'{regression_type} Price to {x_axis_name.split(",")[0]}'
     plt.draw()
-    plt.savefig(f'output/Price_to_{x_axis_name.split(",")[0].replace(" ", "_")}.png')
+    file_name = f'output/{window_title.replace(" ", "_")}.png'
+    plt.savefig(file_name)
+    plt.gcf().canvas.set_window_title(window_title)
     plt.show()
     plt.close()
