@@ -12,17 +12,17 @@ REGION_CODES = dict()
 
 def load_np_array(db):
     ads = [np.array([ad['price'], ad['area'], ad['number_of_rooms'], -1], dtype=int)
-           for ad in db.advertisements.find()]
+           for ad in db.ads.find()]
     ads = np.array(ads)
+    print(ads)
     ads[:, PRICE] = ads[:, PRICE] / 1000
 
-    region_names = [ad['region'] for ad in db.advertisements.find()]
+    region_names = [ad['region'] for ad in db.ads.find()]
     global REGION_CODES
     for index, region_name in enumerate(set(region_names)):
         REGION_CODES[region_name] = index
     codes = [REGION_CODES[region_name] for region_name in region_names]
     ads[:, REGION] = np.array(codes)
-
     return ads
 
 
