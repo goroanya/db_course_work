@@ -20,7 +20,6 @@ class LunSpider(Spider):
         base_url, page_number = response.url.split('page=')
         if page_number != 100:
             next_page_url = f'{base_url}page={int(page_number) + 1}'
-            print(next_page_url)
             yield Request(url=next_page_url, callback=self.parse)
 
     @staticmethod
