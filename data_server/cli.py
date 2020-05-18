@@ -1,9 +1,9 @@
 import numpy as np
 from consolemenu import SelectionMenu
 
+from ml import load_np_array, create_linear_model, create_polynomial_model, \
+    plot_image, X_NAMES, PRICE, REGION, REGION_CODES
 from storage import get_collection
-from ml import load_np_array, remove_odd_value, create_linear_model, create_polynomial_model, \
-    plot_image, X_NAMES, PRICE, REGION, REGION_CODES, AREA, ROOMS
 
 collection = get_collection()
 ads = load_np_array(collection)

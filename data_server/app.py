@@ -1,10 +1,7 @@
-import os
-
 from flask import Flask, request
 
 from api_schema import AdSchema
 from storage import get_collection
-
 
 app = Flask(__name__)
 collection = get_collection()

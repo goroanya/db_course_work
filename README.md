@@ -38,4 +38,21 @@ db.runCommand({shardCollection: "ads.ads", key: {price: 1}})
 ```shell script
 db.printShardingStatus()
 ```
+
+#####Replication instruction:
+```shell
+#Start the server as PRIMARY (master)
+mongod --dbpath /var/lib/mongo/my_database_1 --port 27001 --replSet My_Replica_Set --fork --logpath /var/log/mongodb/my_database_1.log
+#Start the server as SECONDARY (slave):
+mongod --dbpath /var/lib/mongo/my_database_2 --port 27002 --replSet My_Replica_Set --fork --logpath /var/log/mongodb/my_database_2.log
+#Start the server as an arbiter (which does not store data):
+mongod --dbpath /var/lib/mongo/my_database_3 --port 27003 --replSet My_Replica_Set --fork --logpath /var/log/mongodb/my_database_3.log
+```
+PRIMARY server settings:
+```shell
+mongo --host 127.0.0.1 --port 27001
+rs.initiate({"_id" : "My_Replica_Set", members : [ {"_id" : 0, priority : 3, host : "127.0.0.1:27001"}, {"_id" : 1, host : "127.0.0.1:27002"}, {"_id" : 2, host : "127.0.0.1:27003", arbiterOnly : true} ] });
+```
+As a result, the configured MongoDB will be available at `mongodb://127.0.0.1:27003`.
+
 Author: [Anna Horodchenko](https://t.me/goroanya)

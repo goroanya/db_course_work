@@ -24,7 +24,10 @@ def load_np_array(collection):
     codes = [REGION_CODES[region_name] for region_name in region_names]
     ads[:, REGION] = np.array(codes)
 
-    return remove_odd_value(sort_by_avg_region_price(ads))
+    ads = remove_odd_value(ads, AREA)
+    ads = remove_odd_value(ads, PRICE)
+    ads = remove_odd_value(ads, ROOMS)
+    return sort_by_avg_region_price(ads)
 
 
 def sort_by_avg_region_price(ads):
@@ -55,9 +58,10 @@ def find_region_name_by_code(given_code):
             return name
 
 
-def remove_odd_value(df):
+def remove_odd_value(df, prop_name):
     std_dev = 3
-    return df[(np.abs(stats.zscore(df)) < float(std_dev)).all(axis=1)]
+    z_scores = stats.zscore(df[:, prop_name])
+    return df[np.abs(z_scores) < std_dev]
 
 
 def create_linear_model(x, y):
@@ -76,10 +80,11 @@ def create_polynomial_model(x, y):
 def plot_image(x, y, model, x_axis_name, regression_type):
     # change xticks and dpi
     if x_axis_name == 'Region':
-        plt.figure(figsize=(40, 6), dpi=160)
-        labels = list(REGION_CODES.keys())
+        plt.figure(figsize=(15, 8), dpi=100)
+        labels = [l if len(l) < 10 else f'{l[:8]}..'
+                  for l in list(REGION_CODES.keys())]
         ticks = list(REGION_CODES.values())
-        plt.xticks(ticks, labels, fontsize=5)
+        plt.xticks(ticks, labels, fontsize=9, rotation=90)
     else:
         plt.figure(figsize=(8, 6), dpi=80)
     # set label for axix
