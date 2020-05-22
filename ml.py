@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression, Ridge
@@ -11,8 +13,13 @@ REGION_CODES = dict()
 
 
 def load_np_array(collection):
-    ads = [np.array([ad['price'], ad['area'], ad['number_of_rooms'], -1], dtype=int)
-           for ad in collection.find()]
+    ads = []
+    from_db = list(collection.find())
+    for index, ad in enumerate(from_db):
+        os.system('clear')
+        print(f'Loading database info: {100 * index // len(from_db)}%')
+        new_ad = np.array([ad['price'], ad['area'], ad['number_of_rooms'], -1], dtype=int)
+        ads.append(new_ad)
     ads = np.array(ads)
     ads[:, PRICE] = ads[:, PRICE] / 1000
 
@@ -86,7 +93,7 @@ def plot_image(x, y, model, x_axis_name, regression_type):
         ticks = list(REGION_CODES.values())
         plt.xticks(ticks, labels, fontsize=9, rotation=90)
     else:
-        plt.figure(figsize=(8, 6), dpi=80)
+        plt.figure(figsize=(8, 6), dpi=140)
     # set label for axix
     plt.ylabel(X_NAMES[PRICE])
     plt.xlabel(x_axis_name)

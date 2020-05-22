@@ -10,12 +10,16 @@ class LunSpider(Spider):
         'https://flatfy.lun.ua/uk/%D0%BF%D1%80%D0%BE%D0%B4%D0%B0%D0%B6-%D0%BA%D0%B2%D0%B0%D1%80%D1%82%D0%B8%D1%80-%D0%BA%D0%B8%D1%97%D0%B2?page=1']
 
     def parse(self, response):
+        result = []
         root = Selector(response=response)
         ads = root.xpath('//article')
         for ad in ads:
             ad_info = self.parse_article(ad)
             if ad_info:
-                yield ad_info
+                result.append(ad_info)
+
+        if result:
+            yield {'data': result}
 
         base_url, page_number = response.url.split('page=')
         if page_number != 100:
